@@ -39,15 +39,15 @@ jobs:
     needs: get_build_date
     steps:
 
-      - name: Free Disk Space (Ubuntu)
-        uses: jlumbroso/free-disk-space@main
-        with:
-          tool-cache: true
-          android: true
-          dotnet: true
-          haskell: true
-          large-packages: true
-          docker-images: true
+      # - name: Free Disk Space (Ubuntu)
+      #   uses: jlumbroso/free-disk-space@main
+      #   with:
+      #     tool-cache: true
+      #     android: true
+      #     dotnet: true
+      #     haskell: true
+      #     large-packages: true
+      #     docker-images: true
       #     swap-storage: true
 
       - uses: thejerrybao/setup-swap-space@v1
@@ -55,9 +55,7 @@ jobs:
           swap-space-path: /swapfile
           swap-size-gb:  8
           remove-existing-swap-files: false
-          
-      - uses: actions/checkout@v4
-      
+
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
 
@@ -66,6 +64,12 @@ jobs:
         with:
           repository: armbian/build
           path: .
+          
+      - name: checkout conf files
+        uses: actions/checkout@v4
+        with:
+          path: opi3b
+
 
       - name: Prep
         run: |
@@ -76,8 +80,10 @@ jobs:
           # tar --strip-components=1 -xf ${LatestArmbianVer}.tar.gz
           # rm -f ${LatestArmbianVer}.tar.gz
           # git clone https://github.com/armbian/build .
-          ls -l
+          mv opi3b/userpatches .
           mkdir release
+          ls -l
+          sleep 10
 
       - name: Build armbian-${{ matrix.device }}-${{ matrix.vendor }}-${{ matrix.os }}-${{ matrix.type }}.img
         run: |
