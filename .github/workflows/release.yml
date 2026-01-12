@@ -106,7 +106,7 @@ jobs:
         run: |
           image=${{ matrix.device }}-${{ matrix.vendor }}-${{ matrix.os }}-${{ matrix.type }}
           sleep $(( RANDOM % 300 ))
-          ./compile.sh ${image} || exit 1
+          ./compile.sh EXPERT=yes ${image} || exit 1
           find output -name "*.img" -exec cp -vf {} release/armbian-${image}.img \;
           
       - name: Compress armbian-${{ matrix.device }}-${{ matrix.vendor }}-${{ matrix.os }}-${{ matrix.type }}.img
