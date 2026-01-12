@@ -65,6 +65,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: armbian/build
+          path: .
 
       - name: Prep
         run: |
@@ -75,7 +76,7 @@ jobs:
           # tar --strip-components=1 -xf ${LatestArmbianVer}.tar.gz
           # rm -f ${LatestArmbianVer}.tar.gz
           # git clone https://github.com/armbian/build .
-
+          ls -l
           mkdir release
 
       - name: Build armbian-${{ matrix.device }}-${{ matrix.vendor }}-${{ matrix.os }}-${{ matrix.type }}.img
