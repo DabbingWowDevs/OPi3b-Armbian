@@ -95,7 +95,7 @@ jobs:
           mv opi3b/userpatches .
           mkdir release
           ls -l
-          sleep 10
+          #sleep 10
 
       - name: Set random timeout for possible retry
         id: set_timeout
@@ -109,7 +109,8 @@ jobs:
         #   find output -name "*.img" -exec cp -vf {} release/ \;
         uses: nick-invision/retry@v2
         with:
-          timeout_seconds: ${{ steps.set_timeout.outputs.timeout_seconds }}
+          timeout_minutes: 300
+          retry_wait_seconds: ${{ steps.set_timeout.outputs.timeout_seconds }}
           max_attempts: 3
           command: |
             image=${{ matrix.device }}-${{ matrix.vendor }}-${{ matrix.os }}-${{ matrix.type }}
