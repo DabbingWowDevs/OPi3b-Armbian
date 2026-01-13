@@ -112,10 +112,10 @@ jobs:
             extension=${oldfilename##*.}
             oldfilename=$(echo ${oldfilename%.*}|cut -d/ -f2-)
             echo Filename is ${oldfilename}.${extension}
-            AVer=$(echo $filename | sed 's/Armbian-unofficial_\([^_]*\).*/\1/')
+            AVer=$(echo $oldfilename | sed 's/Armbian-unofficial_\([^_]*\).*/\1/')
             echo 
             echo AVer: $AVer
-            KVer=${{ matrix.vendor }}-$(echo $filename | sed "s/.*_${{ matrix.vendor }}_\([^_]*\).*/\1/") 
+            KVer=${{ matrix.vendor }}-$(echo $oldfilename | sed "s/.*_${{ matrix.vendor }}_\([^_]*\).*/\1/") 
             echo KVer: $KVer
             echo "AVer=$AVer" >> $GITHUB_OUTPUT
             echo "KVer${{ matrix.vendor }}=$KVer" >> $GITHUB_OUTPUT 
