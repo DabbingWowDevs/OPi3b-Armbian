@@ -102,6 +102,7 @@ jobs:
           find output -name "*.img" -exec cp -vf {} release/ \;
 
       - name: add version and date
+        id: set_ver
         run: |
           image=${{ matrix.device }}-${{ matrix.vendor }}-${{ matrix.os }}-${{ matrix.type }}
           cd release
@@ -116,22 +117,31 @@ jobs:
             echo AVer: $AVer
             KVer=${{ matrix.vendor }}-$(echo $filename | sed "s/.*_${{ matrix.vendor }}_\([^_]*\).*/\1/") 
             echo KVer: $KVer
-            filename=$(echo ${{ matrix.device }}-${{ matrix.os }}-${{ matrix.type }}-${AVer}-${KVer}-${{ needs.get_build_date.outputs.build_datedash }})
+            echo "AVer=$AVer" >> $GITHUB_OUTPUT
+            echo "KVer${{ matrix.vendor }}=$KVer" >> $GITHUB_OUTPUT 
+            filename=armbian-$(echo ${{ matrix.device }}-${{ matrix.os }}-${{ matrix.type }}-${AVer}-${KVer}-${{ needs.get_build_date.outputs.build_datedash }})
             echo New Filename is ${filename}.${extension}
             mv -vf "${oldfilename}.${extension}" "${filename}.${extension}"
           done
           cd ..
           ls release
           
-      - name: Compress armbian-${{ matrix.device }}-${{ matrix.vendor }}-${{ matrix.os }}-${{ matrix.type }}.img
+      - name: Compress armbian-${{ matrix.device }}-${{ matrix.os }}-${{ matrix.type }}-${AVer}-${KVer}-${{ needs.get_build_date.outputs.build_datedash }}.img
         run: |
           find release -name "*.img" -exec xz -vz -T0 -3 {} \;  
           ls release #-6 --extreme
 
-      - name: Release armbian-${{ matrix.device }}-${{ matrix.vendor }}-${{ matrix.os }}-${{ matrix.type }}.img.xz
+      - name: Release armbian-${{ matrix.device }}-${{ matrix.os }}-${{ matrix.type }}-${AVer}-${KVer}-${{ needs.get_build_date.outputs.build_datedash }}.img.xz
         uses: softprops/action-gh-release@v2
         with:
           files: release/*.img.xz
           draft: true
+          append_body: false
+          fail_on_unmatched_files: true
           name: build ${{ matrix.device }}-${{ needs.get_build_date.outputs.build_datedash }}
           tag_name: ${{ matrix.device }}-v${{ needs.get_build_date.outputs.build_date }}
+          body: |
+            Armbian Version: ${{ steps.set_ver.outputs.AVer }}
+            Kernel Version: 
+              - Edge: ${{ steps.set_ver.outputs.KVeredge }}
+              - Vendor: ${{ steps.set_ver.outputs.KVervendor }}
