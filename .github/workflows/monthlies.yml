@@ -1,8 +1,11 @@
 # This is a basic workflow to help you get started with Actions
 
-name: release Armbian
+name: release Armbian monthly
 on:
+  schedule:
+    - cron: '0 0 14 * *'
   workflow_dispatch:
+
 env:
     GH_TOKEN: ${{ github.token }}
 
@@ -101,10 +104,6 @@ jobs:
           ./compile.sh EXPERT=yes ${image} || exit 1
           find output -name "*.img" -exec cp -vf {} release/ \;
 
-      - name: Generate unique ID
-        id: gen_id
-        run: echo "unique_id=$(uuidgen)" >> $GITHUB_OUTPUT
-
       - name: add version and date
         id: set_ver
         run: |
@@ -121,7 +120,6 @@ jobs:
             echo AVer: $AVer
             KVer=${{ matrix.vendor }}-$(echo $oldfilename | sed "s/.*_${{ matrix.vendor }}_\([^_]*\).*/\1/") 
             echo KVer: $KVer
- 
             filename=armbian-$(echo ${{ matrix.device }}-${{ matrix.os }}-${{ matrix.type }}-${AVer}-${KVer}-${{ needs.get_build_date.outputs.build_datedash }})
             echo New Filename is ${filename}.${extension}
             mv -vf "${oldfilename}.${extension}" "${filename}.${extension}"
@@ -131,7 +129,7 @@ jobs:
           
       - name: Compress armbian-${{ matrix.device }}-${{ matrix.os }}-${{ matrix.type }}.img
         run: |
-          find release -name "*.img" -exec xz -vz -T0 -3 {} \;  
+          find release -name "*.img" -exec xz -vz -T0 -7 {} \;  
           ls release #-6 --extreme
 
       - name: Release armbian-${{ matrix.device }}-${{ matrix.os }}-${{ matrix.type }}.img.xz
@@ -139,8 +137,43 @@ jobs:
         with:
           files: release/*.img.xz
           draft: true
-          append_body: false
           fail_on_unmatched_files: true
           name: build ${{ matrix.device }}-${{ needs.get_build_date.outputs.build_datedash }}
           tag_name: ${{ matrix.device }}-v${{ needs.get_build_date.outputs.build_date }}
+    
+  update_release_body:
+    runs-on: ubuntu-latest
+    needs: [get_build_date, build]
+    steps:
+      - name: Update draft release body
+        run: |
+          tag="opi3b-v${{ needs.get_build_date.outputs.build_date }}"
+          assets=$(gh release view $tag --json assets -q '.assets[].name')
+          AVer=""
+          edge_kver=""
+          vendor_kver=""
+          for asset in $assets; do
+            if [ -z "$AVer" ]; then
+              AVer=$(echo $asset | sed 's/armbian-[^-]*-[^-]*-[^-]*-\([^_]*\)-.*-.*/\1/')
+            fi
+            kver=$(echo $asset | sed 's/armbian-[^-]*-[^-]*-[^-]*-[^-]*-\([^_]*\)-.*-.*/\1/')
+            if [[ $kver == edge-* ]]; then
+              edge_kver=$kver
+            elif [[ $kver == vendor-* ]]; then
+              vendor_kver=$kver
+            fi
+          done
+          body="Armbian Version: $AVer
+          Kernel Versions:
+          - Edge: $edge_kver
+          - Vendor: $vendor_kver"
+          gh release edit $tag --notes "$body"
+    
+  publish:
+    runs-on: ubuntu-latest
+    needs: [get_build_date, build, update_release_body]
+    steps:
+      - name: Publish draft release
+        run: gh release edit opi3b-v${{ needs.get_build_date.outputs.build_date }} --draft=false
+    
 
