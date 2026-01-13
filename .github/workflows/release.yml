@@ -99,7 +99,32 @@ jobs:
           image=${{ matrix.device }}-${{ matrix.vendor }}-${{ matrix.os }}-${{ matrix.type }}
           sleep $(( RANDOM % 300 ))
           ./compile.sh EXPERT=yes ${image} || exit 1
-          find output -name "*.img" -exec cp -vf {} release/armbian-${image}.img \;
+          find output -name "*.img" -exec cp -vf {} release/ \;
+
+      - name: add version and date
+        run: |
+          image=${{ matrix.device }}-${{ matrix.vendor }}-${{ matrix.os }}-${{ matrix.type }}
+          for i in $(find release -name "*.img" -exec echo "{}" \;)
+          do
+            filename=$i
+            echo Filename is ${filename}
+            filename=$(echo ${filename}e|cut -d. -f1)
+            # Get armbiann version, and the kernnel type along with kernnel version from filename
+            # filename examples:
+            # Armbian-unofficial_26.02.0-trunk_Orangepi3b_bookworm_vendor_6.1.115_cinnamon_desktop.img
+            ## example vars:
+            ## AVer=26.02.0-trunk
+            ## KVer=vendor_6.1.115
+            # Armbian-unofficial_26.02.0-trunk_Orangepi3b_bookworm_edge_6.19.0-rc4_cinnamon_desktop.img
+
+            AVer=$(echo $filename | sed 's/Armbian-unofficial_\([^_]*\).*/\1/')
+            KVer=$(echo $filename | sed "s/.*_${{ matrix.vendor }}_\([^_]*\).*/\1/")
+            
+            filename=$(echo ${filename}-${AVer}-${KVer}-${{ needs.get_build_date.outputs.build_datedash }})
+            echo New Filename is ${filename}
+            cp -vf "$i" "${filename}"
+          done
+          ls release
           
       - name: Compress armbian-${{ matrix.device }}-${{ matrix.vendor }}-${{ matrix.os }}-${{ matrix.type }}.img
         run: |
