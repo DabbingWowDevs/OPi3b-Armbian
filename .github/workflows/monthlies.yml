@@ -61,10 +61,22 @@ jobs:
     needs: get_build_date
     steps:
 
+      # - name: Free Disk Space (Ubuntu)
+      #   uses: jlumbroso/free-disk-space@main
+      #   with:
+      #     tool-cache: true
+      #     android: true
+      #     dotnet: true
+      #     haskell: true
+      #     large-packages: true
+      #     docker-images: true
+      #     swap-storage: true
+
       - name: Free Disk Space (Ubuntu)
-        uses: jlumbroso/free-disk-space@main
+        uses: BRAINSia/free-disk-space@v2
         with:
-          tool-cache: true
+          tool-cache: false
+          mandb:   true
           android: true
           dotnet: true
           haskell: true
@@ -129,7 +141,7 @@ jobs:
           command: |
             image=${{ matrix.device }}-${{ matrix.vendor }}-${{ matrix.os }}-${{ matrix.type }}
             #sleep ${{ steps.set_timeout.outputs.retry_wait_seconds }}
-            ./compile.sh EXPERT=yes PREFER_DOCKER=no ${image} || exit 1
+            ./compile.sh EXPERT=yes PREFER_DOCKER=yes ${image} || exit 1
             find output -name "*.img" -exec cp -vf {} release/ \;
 
       - name: add version and date
