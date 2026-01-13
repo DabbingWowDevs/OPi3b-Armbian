@@ -120,7 +120,7 @@ jobs:
             echo KVer: $KVer
             filename=$(echo ${filename}-${AVer}-${KVer}-${{ needs.get_build_date.outputs.build_datedash }})
             echo New Filename is ${filename}.${extension}
-            cp -vf "${oldfilename}.${extension}" "${filename}.${extension}"
+            mv -vf "${oldfilename}.${extension}" "${filename}.${extension}"
           done
           cd ..
           ls release
