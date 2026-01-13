@@ -98,11 +98,20 @@ jobs:
           sleep 10
 
       - name: Build armbian-${{ matrix.device }}-${{ matrix.vendor }}-${{ matrix.os }}-${{ matrix.type }}.img
-        run: |
-          image=${{ matrix.device }}-${{ matrix.vendor }}-${{ matrix.os }}-${{ matrix.type }}
-          sleep $(( RANDOM % 300 ))
-          ./compile.sh EXPERT=yes ${image} || exit 1
-          find output -name "*.img" -exec cp -vf {} release/ \;
+        # run: |
+        #   image=${{ matrix.device }}-${{ matrix.vendor }}-${{ matrix.os }}-${{ matrix.type }}
+        #   sleep $(( RANDOM % 300 ))
+        #   ./compile.sh EXPERT=yes ${image} || exit 1
+        #   find output -name "*.img" -exec cp -vf {} release/ \;
+        uses: google-github-actions/retry-action@v0
+        with:
+          initial_delay_seconds: 10
+          max_attempts: 3
+          command: |
+            image=${{ matrix.device }}-${{ matrix.vendor }}-${{ matrix.os }}-${{ matrix.type }}
+            # sleep $(( RANDOM % 300 ))
+            ./compile.sh EXPERT=yes ${image} || exit 1
+            find output -name "*.img" -exec cp -vf {} release/ \;
 
       - name: add version and date
         id: set_ver
