@@ -24,36 +24,34 @@ jobs:
           echo "date=$(echo $datenow | sed 's|\-||g')" >> $GITHUB_OUTPUT
           echo Date and time is $datenow EST
           
-          
-
   build:
     strategy:
       matrix:
         # # test release
         # device: [opi3b]
-        # vendor: [edge]
+        # kernel: [edge]
         # os: [bookworm]
         # type: [minimal] 
 
         device: [opi3b]
-        vendor: [edge, vendor]
+        kernel: [edge, vendor]
         os: [bookworm, trixie, noble, plucky]
         type: [minimal, cinnamon, gnome, i3-wm, mate, xfce] # kde-neon, kde-plasma,
         exclude:
           - device: opi3b
-            vendor: edge
+            kernel: edge
             os: noble
             type: mate
           - device: opi3b
-            vendor: vendor
+            kernel: vendor
             os: noble
             type: mate
           - device: opi3b
-            vendor: vendor
+            kernel: vendor
             os: plucky
             type: mate
           - device: opi3b
-            vendor: edge
+            kernel: edge
             os: plucky
             type: mate
       fail-fast: false
@@ -120,14 +118,14 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.ccache
-          key: ccache-${{ matrix.vendor }}-${{ matrix.os }}-${{ hashFiles('**/*.sh', '**/*.mk') }}
+          key: ccache-${{ matrix.kernel }}-${{ matrix.os }}
           restore-keys: |
-            ccache-${{ matrix.vendor }}-${{ matrix.os }}-
+            ccache-${{ matrix.kernel }}-
             ccache-
 
-      - name: Build armbian-${{ matrix.device }}-${{ matrix.vendor }}-${{ matrix.os }}-${{ matrix.type }}.img
+      - name: Build armbian-${{ matrix.device }}-${{ matrix.kernel }}-${{ matrix.os }}-${{ matrix.type }}.img
         # run: |
-        #   image=${{ matrix.device }}-${{ matrix.vendor }}-${{ matrix.os }}-${{ matrix.type }}
+        #   image=${{ matrix.device }}-${{ matrix.kernel }}-${{ matrix.os }}-${{ matrix.type }}
         #   sleep $(( RANDOM % 300 ))
         #   ./compile.sh EXPERT=yes  ${image} || exit 1
         #   find output -name "*.img" -exec cp -vf {} release/ \;
@@ -137,15 +135,16 @@ jobs:
           retry_wait_seconds: ${{ steps.set_timeout.outputs.retry_wait_seconds }}
           max_attempts: 5
           command: |
-            image=${{ matrix.device }}-${{ matrix.vendor }}-${{ matrix.os }}-${{ matrix.type }}
+            image=${{ matrix.device }}-${{ matrix.kernel }}-${{ matrix.os }}-${{ matrix.type }}
             #sleep ${{ steps.set_timeout.outputs.retry_wait_seconds }}
-            CCACHE=1 ./compile.sh EXPERT=yes PREFER_DOCKER=no ${image} || exit 1
+            export CCACHE=1
+            ./compile.sh USE_CCACHE=yes EXPERT=yes PREFER_DOCKER=no ${image} || exit 1
             find output -name "*.img" -exec cp -vf {} release/ \;
 
       - name: add version and date
         id: set_ver
         run: |
-          image=${{ matrix.device }}-${{ matrix.vendor }}-${{ matrix.os }}-${{ matrix.type }}
+          image=${{ matrix.device }}-${{ matrix.kernel }}-${{ matrix.os }}-${{ matrix.type }}
           cd release
           for i in $(find . -name "*.img" -exec echo "{}" \;)
           do
@@ -156,7 +155,7 @@ jobs:
             AVer=$(echo $oldfilename | sed 's/Armbian-unofficial_\([^_]*\).*/\1/')
             echo 
             echo AVer: $AVer
-            KVer=${{ matrix.vendor }}-$(echo $oldfilename | sed "s/.*_${{ matrix.vendor }}_\([^_]*\).*/\1/") 
+            KVer=${{ matrix.kernel }}-$(echo $oldfilename | sed "s/.*_${{ matrix.kernel }}_\([^_]*\).*/\1/") 
             echo KVer: $KVer
             filename=armbian-$(echo ${{ matrix.device }}-${{ matrix.os }}-${{ matrix.type }}-${AVer}-${KVer}-${{ needs.get_build_date.outputs.build_datedash }})
             echo New Filename is ${filename}.${extension}
