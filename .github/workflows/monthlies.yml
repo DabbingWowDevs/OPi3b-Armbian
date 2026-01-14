@@ -181,18 +181,19 @@ jobs:
       - name: Update draft release body
         run: |
           tag="opi3b-v${{ needs.get_build_date.outputs.build_date }}"
-          assets=$(gh release view $tag --json assets -q '.assets[].name')
+          assets=$(gh release view $tag --repo ${{ github.repository }} --json assets -q '.assets[].name')
           AVer=""
           edge_kver=""
           vendor_kver=""
           for asset in $assets; do
             if [ -z "$AVer" ]; then
-              AVer=$(echo $asset | sed 's/armbian-[^-]*-[^-]*-[^-]*-\([^_]*\)-.*-.*/\1/')
+              AVer=$(echo $asset | sed 's/armbian-[^-]*-[^-]*-[^-]*-//' | sed 's/-\(edge\|vendor\)-.*//')
             fi
-            kver=$(echo $asset | sed 's/armbian-[^-]*-[^-]*-[^-]*-[^-]*-\([^_]*\)-.*-.*/\1/')
-            if [[ $kver == edge-* ]]; then
+            kver=$(echo $asset | sed 's/.*-\(edge\|vendor\)-\([^-]*\)-.*-.*/\2/')
+            kernel_type=$(echo $asset | sed 's/.*-\(edge\|vendor\)-\([^-]*\)-.*-.*/\1/')
+            if [[ $kernel_type == "edge" ]]; then
               edge_kver=$kver
-            elif [[ $kver == vendor-* ]]; then
+            elif [[ $kernel_type == "vendor" ]]; then
               vendor_kver=$kver
             fi
           done
@@ -200,7 +201,7 @@ jobs:
           Kernel Versions:
           - Edge: $edge_kver
           - Vendor: $vendor_kver"
-          gh release edit $tag --notes "$body"
+          gh release edit $tag --repo ${{ github.repository }} --notes "$body"
     
   publish:
     runs-on: ubuntu-latest
