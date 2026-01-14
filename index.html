@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>OPi3b-Armbian Image Picker</title>
+  <style>
+    body {
+      padding: 25px;
+      background-color: #121212;
+      color: #ff6f00;
+      font-family: sans-serif;
+    }
+
+    input[type="text"] {
+      padding: 8px;
+      margin-bottom: 10px;
+      border: 1px solid #555;
+      border-radius: 4px;
+      background-color: #333;
+      color: #eee;
+    }
+
+    button {
+      padding: 10px 15px;
+      background-color: #0056b3;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #003f7a;
+    }
+
+    #assetList a {
+      color: #ff6f00;
+      text-decoration: underline;
+      margin-bottom: 5px;
+      display: block;
+      transition: color 0.2s;
+    }
+
+    #assetList a:hover {
+      text-decoration: underline;
+      color: #ff9100;
+    }
+
+    #assetList a:active,
+    #assetList a:visited {
+      color: #b34700;
+    }
+
+    h2 {
+      margin-bottom: 4px;
+      margin-top: 6px;
+    }
+
+    h3 {
+      margin-bottom: 4px;
+      margin-top: 6px;
+    }
+
+    h4 {
+      margin-bottom: 4px;
+      margin-top: 6px;
+    }
+
+    input[type="checkbox"], input[type="radio"] {
+      accent-color: #ff6f00;
+      border: 1.5px solid #ff6f00;
+    }
+
+    input[type="checkbox"].styled,
+    input[type="radio"].styled {
+      position: absolute;
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .custom-checkbox,
+    .custom-radio {
+      display: inline-block;
+      width: 18px;
+      height: 18px;
+      background: #222;
+      border: 1.5px solid #ff6f00;
+      border-radius: 4px;
+      vertical-align: middle;
+      margin-right: 6px;
+      position: relative;
+      cursor: pointer;
+    }
+
+    .custom-radio {
+      border-radius: 50%;
+    }
+
+    input[type="checkbox"].styled:checked + .custom-checkbox,
+    input[type="radio"].styled:checked + .custom-radio {
+      background: #ff6f00;
+      box-shadow: 0 0 0 2px #ff6f00 inset;
+    }
+
+    .custom-checkbox:after {
+      content: "";
+      position: absolute;
+      display: none;
+    }
+
+    input[type="checkbox"].styled:checked + .custom-checkbox:after {
+      display: block;
+    }
+
+    .custom-checkbox:after {
+      left: 5px;
+      top: 1px;
+      width: 4px;
+      height: 9px;
+      border: solid #222;
+      border-width: 0 3px 3px 0;
+      transform: rotate(45deg);
+    }
+
+    .custom-radio:after {
+      content: "";
+      position: absolute;
+      display: none;
+    }
+
+    input[type="radio"].styled:checked + .custom-radio:after {
+      display: block;
+    }
+
+    .custom-radio:after {
+      top: 4px;
+      left: 4px;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #222;
+    }
+
+    input[type="checkbox"].myCheckbox:disabled + .custom-checkbox {
+      background: #7a3c00;
+      border-color: #b34700;
+      opacity: 0.7;
+    }
+  </style>
+</head>
+<body>
+  <h2>OPi3b-Armbian Image Picker</h2>
+  <p>Select the OS, kernel, and desktop environment for the Armbian image.</p>
+  <p>The image name and download links will be generated below.</p>
+
+  <h3>Select OS</h3>
+  <label>
+    <input type="radio" class="styled myRadio" name="os" value="bookworm" checked>
+    <span class="custom-radio"></span>
+    Bookworm
+  </label><br>
+  <label>
+    <input type="radio" class="styled myRadio" name="os" value="trixie">
+    <span class="custom-radio"></span>
+    Trixie
+  </label><br>
+  <label>
+    <input type="radio" class="styled myRadio" name="os" value="noble">
+    <span class="custom-radio"></span>
+    Noble
+  </label><br>
+  <label>
+    <input type="radio" class="styled myRadio" name="os" value="plucky">
+    <span class="custom-radio"></span>
+    Plucky
+  </label><br><br>
+
+  <h3>Select Kernel</h3>
+  <label>
+    <input type="radio" class="styled myRadio" name="kernel" value="edge" checked>
+    <span class="custom-radio"></span>
+    Edge
+  </label><br>
+  <label>
+    <input type="radio" class="styled myRadio" name="kernel" value="vendor">
+    <span class="custom-radio"></span>
+    Vendor
+  </label><br><br>
+
+  <h3>Select Desktop Environment</h3>
+  <label>
+    <input type="radio" class="styled myRadio" name="type" value="minimal" checked>
+    <span class="custom-radio"></span>
+    Minimal
+  </label><br>
+  <label>
+    <input type="radio" class="styled myRadio" name="type" value="cinnamon">
+    <span class="custom-radio"></span>
+    Cinnamon
+  </label><br>
+  <label>
+    <input type="radio" class="styled myRadio" name="type" value="gnome">
+    <span class="custom-radio"></span>
+    GNOME
+  </label><br>
+  <label>
+    <input type="radio" class="styled myRadio" name="type" value="i3-wm">
+    <span class="custom-radio"></span>
+    i3-wm
+  </label><br>
+  <label>
+    <input type="radio" class="styled myRadio" name="type" value="mate">
+    <span class="custom-radio"></span>
+    MATE
+  </label><br>
+  <label>
+    <input type="radio" class="styled myRadio" name="type" value="xfce">
+    <span class="custom-radio"></span>
+    XFCE
+  </label><br><br>
+
+  <b>Filename Pattern:</b> <i id="result"></i>
+  <br><br>
+  <h4>Download links</h4>
+  <div id="assetList"></div>
+
+  <footer id="repoFooter" style="margin-top:2em; color:#ff6f00; font-size:0.95em;"></footer>
+
+  <script>
+    function wildcardToRegExp(pattern) {
+      pattern = pattern.replace(/[-\/\\^$+?.()|[\]{}]/g, '\\$&');
+      pattern = pattern.replace(/\*/g, '.*');
+      return new RegExp('^' + pattern + '$', 'i');
+    }
+
+    function getRepoInfo() {
+      const owner = "DabbingWowDevs";
+      const repo = "OPi3b-Armbian";
+      return { owner, repo };
+    }
+
+    async function fetchAndDisplayAssets() {
+      const { owner, repo } = getRepoInfo();
+      const apiUrl = `https://api.github.com/repos/${owner}/${repo}/releases/latest`;
+      const resultElem = document.getElementById("result");
+      const assetListElem = document.getElementById("assetList");
+      const pattern = resultElem.textContent;
+      const regex = wildcardToRegExp(pattern);
+
+      assetListElem.innerHTML = "Loading...";
+
+      try {
+        const response = await fetch(apiUrl);
+        const data = await response.json();
+        const assets = data.assets || [];
+        const matches = assets.filter(asset => regex.test(asset.name));
+
+        if (matches.length === 0) {
+          assetListElem.innerHTML = "No matching assets found.";
+          return;
+        }
+
+        assetListElem.innerHTML = matches.map(asset =>
+          `<a href="${asset.browser_download_url}" target="_blank">${asset.name}</a>`
+        ).join('');
+      } catch (e) {
+        assetListElem.innerHTML = "Error fetching assets.";
+      }
+    }
+
+    function getStringFromRadios() {
+      const os = document.querySelector('input[name="os"]:checked').value;
+      const kernel = document.querySelector('input[name="kernel"]:checked').value;
+      const type = document.querySelector('input[name="type"]:checked').value;
+
+      const resultString = `armbian-opi3b-${os}-${type}-*-${kernel}-*.img.xz`;
+      document.getElementById("result").textContent = resultString;
+
+      fetchAndDisplayAssets();
+    }
+
+    document.querySelectorAll('.myRadio').forEach(function(radio) {
+      radio.addEventListener('change', getStringFromRadios);
+    });
+
+    getStringFromRadios();
+
+    function updateRepoFooter() {
+      const { owner, repo } = getRepoInfo();
+      const footer = document.getElementById("repoFooter");
+      footer.innerHTML = `Using GitHub repo: <a href="https://github.com/${owner}/${repo}" target="_blank" style="color:#ff6f00;">${owner}/${repo}</a>`;
+    }
+    updateRepoFooter();
+  </script>
+</body>
+</html>
