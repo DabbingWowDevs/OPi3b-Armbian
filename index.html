@@ -179,12 +179,12 @@
   <label>
     <input type="radio" class="styled myRadio" name="kernel" value="edge" checked>
     <span class="custom-radio"></span>
-    Edge
+    Edge <span id="edgeVersion"></span>
   </label><br>
   <label>
     <input type="radio" class="styled myRadio" name="kernel" value="vendor">
     <span class="custom-radio"></span>
-    Vendor
+    Vendor <span id="vendorVersion"></span>
   </label><br><br>
 
   <h3>Select Desktop Environment</h3>
@@ -239,6 +239,29 @@
       return { owner, repo };
     }
 
+    async function fetchKernelVersions() {
+      const { owner, repo } = getRepoInfo();
+      const apiUrl = `https://api.github.com/repos/${owner}/${repo}/releases/latest`;
+
+      try {
+        const response = await fetch(apiUrl);
+        const data = await response.json();
+        const body = data.body || "";
+
+        // Parse kernel versions from release body
+        const edgeMatch = body.match(/- Edge: ([\S]+)/);
+        const vendorMatch = body.match(/- Vendor: ([\S]+)/);
+
+        const edgeVersion = edgeMatch ? edgeMatch[1] : "Unknown";
+        const vendorVersion = vendorMatch ? vendorMatch[1] : "Unknown";
+
+        document.getElementById("edgeVersion").textContent = `(${edgeVersion})`;
+        document.getElementById("vendorVersion").textContent = `(${vendorVersion})`;
+      } catch (e) {
+        console.error("Error fetching kernel versions:", e);
+      }
+    }
+
     async function fetchAndDisplayAssets() {
       const { owner, repo } = getRepoInfo();
       const apiUrl = `https://api.github.com/repos/${owner}/${repo}/releases/latest`;
@@ -283,6 +306,7 @@
       radio.addEventListener('change', getStringFromRadios);
     });
 
+    fetchKernelVersions();
     getStringFromRadios();
 
     function updateRepoFooter() {
